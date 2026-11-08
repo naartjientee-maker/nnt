@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NNT Product Shipping</title>
+<title>NNT Marketplace</title>
 <style>
+* { box-sizing: border-box; }
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -14,8 +15,8 @@ body {
 header {
     background: #102b46;
     color: white;
-    padding: 25px;
     text-align: center;
+    padding: 25px;
 }
 nav {
     background: white;
@@ -23,42 +24,57 @@ nav {
     text-align: center;
 }
 nav a {
-    margin: 10px;
+    display: inline-block;
+    margin: 8px;
     color: #1769aa;
     text-decoration: none;
     font-weight: bold;
 }
 main {
-    max-width: 850px;
+    max-width: 950px;
     margin: auto;
-    padding: 20px;
+    padding: 18px;
 }
-.card {
+section, .product {
     background: white;
     padding: 22px;
-    margin: 20px 0;
+    margin: 18px 0;
     border-radius: 12px;
-    box-shadow: 0 2px 8px #ddd;
 }
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    box-sizing: border-box;
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+    gap: 15px;
+}
+.product {
+    margin: 0;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+.product-icon {
+    font-size: 45px;
 }
 button {
     background: #1769aa;
     color: white;
-    padding: 13px 20px;
-    border: none;
+    padding: 12px 18px;
+    border: 0;
     border-radius: 7px;
     cursor: pointer;
+    margin-top: 8px;
+}
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0 15px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
 }
 footer {
-    text-align: center;
-    padding: 20px;
     background: #102b46;
     color: white;
+    text-align: center;
+    padding: 22px;
 }
 </style>
 </head>
@@ -66,49 +82,120 @@ footer {
 
 <header>
     <h1>Welcome to NNT</h1>
-    <p>Your Product Shipping Platform</p>
+    <p>Your Marketplace. Your Products. Your World.</p>
 </header>
 
 <nav>
     <a href="#home">Home</a>
     <a href="#products">Products</a>
-    <a href="#dealerships">Dealerships</a>
+    <a href="#seller">Seller Centre</a>
     <a href="#contact">Contact</a>
 </nav>
 
 <main>
-    <section class="card" id="home">
-        <h2>Welcome to NNT!</h2>
-        <p>Find products and connect with dealerships through one platform.</p>
-    </section>
 
-    <section class="card" id="products">
-        <h2>Find Products</h2>
-        <p>Our product section is being built.</p>
-        <input type="text" placeholder="Search for a product">
-        <button onclick="alert('Product search is coming soon!')">
-            Search
-        </button>
-    </section>
+<section id="home">
+    <h2>Welcome to NNT Marketplace</h2>
+    <p>Discover products from different sellers and dealerships.</p>
+    <p>Find what you need, contact the seller and shop through NNT.</p>
+    <a href="#products"><button>Explore Products</button></a>
+</section>
 
-    <section class="card" id="dealerships">
-        <h2>Dealerships</h2>
-        <p>We are preparing our dealership directory.</p>
-    </section>
+<section id="products">
+    <h2>Explore Products</h2>
+    <p>These are example categories. Real seller listings will be added later.</p>
 
-    <section class="card" id="contact">
-        <h2>Contact NNT</h2>
-        <p>Have a question? Enter your details below.</p>
-        <input type="text" placeholder="Your name">
-        <input type="email" placeholder="Your email">
-        <button onclick="alert('Contact feature coming soon!')">
-            Submit
-        </button>
-    </section>
+    <div class="products">
+        <div class="product">
+            <div class="product-icon">🚗</div>
+            <h3>Cars</h3>
+            <p>Find vehicles from dealerships.</p>
+            <button onclick="alert('Car listings are coming soon!')">Explore</button>
+        </div>
+
+        <div class="product">
+            <div class="product-icon">👟</div>
+            <h3>Shoes</h3>
+            <p>Discover shoes from sellers.</p>
+            <button onclick="alert('Shoe listings are coming soon!')">Explore</button>
+        </div>
+
+        <div class="product">
+            <div class="product-icon">📱</div>
+            <h3>Electronics</h3>
+            <p>Phones and other technology.</p>
+            <button onclick="alert('Electronics are coming soon!')">Explore</button>
+        </div>
+
+        <div class="product">
+            <div class="product-icon">👕</div>
+            <h3>Clothing</h3>
+            <p>Discover fashion and clothing.</p>
+            <button onclick="alert('Clothing listings are coming soon!')">Explore</button>
+        </div>
+
+        <div class="product">
+            <div class="product-icon">🛋️</div>
+            <h3>Furniture</h3>
+            <p>Find furniture for your home.</p>
+            <button onclick="alert('Furniture listings are coming soon!')">Explore</button>
+        </div>
+
+        <div class="product">
+            <div class="product-icon">🏠</div>
+            <h3>Home Appliances</h3>
+            <p>Explore household products.</p>
+            <button onclick="alert('Appliances are coming soon!')">Explore</button>
+        </div>
+    </div>
+</section>
+
+<section id="seller">
+    <h2>NNT Seller Centre</h2>
+    <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+    <h3>Seller Registration</h3>
+    <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+        <label>Business or seller name</label>
+        <input type="text" placeholder="Enter seller name" required>
+
+        <label>Email address</label>
+        <input type="email" placeholder="Enter email address" required>
+
+        <label>Product category</label>
+        <select required>
+            <option value="">Choose a category</option>
+            <option>Cars</option>
+            <option>Shoes</option>
+            <option>Electronics</option>
+            <option>Clothing</option>
+            <option>Furniture</option>
+            <option>Other</option>
+        </select>
+
+        <button type="submit">Preview Registration</button>
+    </form>
+
+    <h3>Seller Dashboard</h3>
+    <p>Manage products, prices, stock and customer orders.</p>
+    <button onclick="alert('Seller dashboard coming soon!')">Open Seller Dashboard</button>
+
+    <h3>Add a Product</h3>
+    <p>Sellers will be able to upload product details here.</p>
+    <button onclick="alert('Product upload will be connected later!')">Add Product</button>
+</section>
+
+<section id="contact">
+    <h2>Contact NNT</h2>
+    <p>Questions about NNT? Get in touch with our team.</p>
+    <p>Customer support and seller support will be added here.</p>
+</section>
+
 </main>
 
 <footer>
-    <p>© 2026 NNT Product Shipping</p>
+    <p>© 2026 NNT Marketplace</p>
+    <p>Connecting Customers and Sellers</p>
 </footer>
 
 </body>
