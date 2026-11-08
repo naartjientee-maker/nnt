@@ -61,6 +61,13 @@ section, .product {
     border: 1px solid #ddd;
 }
 
+.product img {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
 .product-icon {
     font-size: 45px;
 }
@@ -75,12 +82,13 @@ button {
     margin-top: 8px;
 }
 
-input, select {
+input, select, textarea {
     width: 100%;
     padding: 12px;
     margin: 8px 0 15px;
     border: 1px solid #bbb;
     border-radius: 6px;
+    font-family: Arial, sans-serif;
 }
 
 footer {
@@ -193,7 +201,6 @@ footer {
         </select>
 
         <button type="submit">Preview Registration</button>
-
     </form>
 
     <h3>Seller Dashboard</h3>
@@ -206,23 +213,22 @@ footer {
     <h3>Add a Product</h3>
     <p>Sellers will be able to upload product details here.</p>
 
-   <form id="productForm">
-    <h3>Add a Product</h3>
+    <form id="productForm">
 
-    <label>Product Name</label>
-    <input type="text" id="productName" placeholder="Enter product name" required>
+        <label>Product Name</label>
+        <input type="text" id="productName" placeholder="Enter product name" required>
 
-    <label>Product Price (R)</label>
-    <input type="number" id="productPrice" placeholder="Enter price" min="0" required>
+        <label>Product Price (R)</label>
+        <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
 
-    <label>Product Description</label>
-    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+        <label>Product Description</label>
+        <textarea id="productDescription" placeholder="Describe your product" required></textarea>
 
-    <label>Product Photo</label>
-    <input type="file" id="productPhoto" accept="image/*">
+        <label>Product Photo</label>
+        <input type="file" id="productPhoto" accept="image/*">
 
-    <button type="submit">Add Product</button>
-</form>
+        <button type="submit">Add Product</button>
+    </form>
 
 </section>
 
@@ -242,486 +248,114 @@ footer {
 <script>
 const productForm = document.getElementById("productForm");
 
-let savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+let savedProducts = [];
+
+try {
+    savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+} catch (error) {
+    savedProducts = [];
+}
+
 const productSection = document.createElement("div");
 productSection.id = "productList";
 productSection.innerHTML = "<h3>Products Added</h3>";
 
 productForm.after(productSection);
-savedProducts.forEach(function(savedProduct) {
-    const product = document.createElement("div");
 
-    product.innerHTML = `
-        <h3>${escapeText(savedProduct.name)}</h3>
-        <p>Price: R${escapeText(savedProduct.price)}</p>
-        <p>${escapeText(savedProduct.description)}</p>
-    `;
+function displayProduct(savedProduct) {
+    const product = document.createElement("div");
+    product.className = "product";
+
+    const title = document.createElement("h3");
+    title.textContent = savedProduct.name;
+
+    const price = document.createElement("p");
+    price.textContent = "Price: R" + savedProduct.price;
+
+    const description = document.createElement("p");
+    description.textContent = savedProduct.description;
+
+    product.appendChild(title);
+    product.appendChild(price);
+    product.appendChild(description);
+
+    if (savedProduct.photo &&
+        savedProduct.photo.startsWith("data:image/")) {
+
+        const image = document.createElement("img");
+        image.src = savedProduct.photo;
+        image.alt = "Product photo";
+        product.appendChild(image);
+    }
 
     productSection.appendChild(product);
-});
+}
+
+savedProducts.forEach(displayProduct);
 
 productForm.addEventListener("submit", function(event) {
     event.preventDefault();
 
-    const name = document.getElementById("productName").value;
+    const name = document.getElementById("productName").value.trim();
     const price = document.getElementById("productPrice").value;
-    const description = document.getElementById("productDescription").value;
+    const description = document.getElementById("productDescription").value.trim();
+    const photoFile = document.getElementById("productPhoto").files[0];
 
-    const product = document.createElement("div");
-    product.innerHTML = `
-        <h3>${escapeText(name)}</h3>
-        <p>Price: R${escapeText(price)}</p>
-        <p>${escapeText(description)}</p>
-    `;
+    function saveProduct(photoData) {
+        const newProduct = {
+            name: name,
+            price: price,
+            description: description,
+            photo: photoData
+        };
 
-    productSection.appendChild(product);
-    savedProducts.push({
-    name: name,
-    price: price,
-    description: description
+        savedProducts.push(newProduct);
+
+        try {
+            localStorage.setItem(
+                "nntProducts",
+                JSON.stringify(savedProducts)
+            );
+        } catch (error) {
+            savedProducts.pop();
+            alert("Storage is full. Please choose a smaller photo.");
+            return;
+        }
+
+        displayProduct(newProduct);
+        productForm.reset();
+
+        alert("Your test product has been added!");
+    }
+
+    if (photoFile) {
+        if (!photoFile.type.startsWith("image/")) {
+            alert("Please choose an image file.");
+            return;
+        }
+
+        if (photoFile.size > 1024 * 1024) {
+            alert("Please choose a photo smaller than 1 MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function() {
+            saveProduct(reader.result);
+        };
+
+        reader.onerror = function() {
+            alert("The photo could not be loaded. Please try again.");
+        };
+
+        reader.readAsDataURL(photoFile);
+
+    } else {
+        saveProduct("");
+    }
 });
-
-localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
-
-    productForm.reset();
-
-    alert("Your test product has been added!");
-});
-
-function escapeText(value) {
-    const element = document.createElement("span");
-    element.textContent = value;
-    return element.innerHTML;
-}
 </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NNT Marketplace</title>
-<style><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NNT Marketplace</title>
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f2f5f9;
-    color: #102b46;
-}
-
-header {
-    background: #102b46;
-    color: white;
-    text-align: center;
-    padding: 25px;
-}
-
-nav {
-    background: white;
-    padding: 15px;
-    text-align: center;
-}
-
-nav a {
-    display: inline-block;
-    margin: 8px;
-    color: #1769aa;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-main {
-    max-width: 950px;
-    margin: auto;
-    padding: 18px;
-}
-
-section, .product {
-    background: white;
-    padding: 22px;
-    margin: 18px 0;
-    border-radius: 12px;
-}
-
-.products {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
-    gap: 15px;
-}
-
-.product {
-    margin: 0;
-    text-align: center;
-    border: 1px solid #ddd;
-}
-
-.product-icon {
-    font-size: 45px;
-}
-
-button {
-    background: #1769aa;
-    color: white;
-    padding: 12px 18px;
-    border: 0;
-    border-radius: 7px;
-    cursor: pointer;
-    margin-top: 8px;
-}
-
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0 15px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-}
-
-footer {
-    background: #102b46;
-    color: white;
-    text-align: center;
-    padding: 22px;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-    <h1>Welcome to NNT</h1>
-    <p>Your Marketplace. Your Products. Your World.</p>
-</header>
-
-<nav>
-    <a href="#home">Home</a>
-    <a href="#products">Products</a>
-    <a href="#seller">Seller Centre</a>
-    <a href="#contact">Contact</a>
-</nav>
-
-<main>
-
-<section id="home">
-    <h2>Welcome to NNT Marketplace</h2>
-    <p>Discover products from different sellers and dealerships.</p>
-    <p>Find what you need, contact the seller and shop through NNT.</p>
-    <a href="#products"><button>Explore Products</button></a>
-</section>
-
-<section id="products">
-    <h2>Explore Products</h2>
-    <p>These are example categories. Real seller listings will be added later.</p>
-
-    <div class="products">
-
-        <div class="product">
-            <div class="product-icon">🚗</div>
-            <h3>Cars</h3>
-            <p>Find vehicles from dealerships.</p>
-            <button onclick="alert('Car listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">👟</div>
-            <h3>Shoes</h3>
-            <p>Discover shoes from sellers.</p>
-            <button onclick="alert('Shoe listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">📱</div>
-            <h3>Electronics</h3>
-            <p>Phones and other technology.</p>
-            <button onclick="alert('Electronics are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">👕</div>
-            <h3>Clothing</h3>
-            <p>Discover fashion and clothing.</p>
-            <button onclick="alert('Clothing listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">🛋️</div>
-            <h3>Furniture</h3>
-            <p>Find furniture for your home.</p>
-            <button onclick="alert('Furniture listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">🏠</div>
-            <h3>Home Appliances</h3>
-            <p>Explore household products.</p>
-            <button onclick="alert('Appliances are coming soon!')">Explore</button>
-        </div>
-
-    </div>
-</section>
-
-<section id="seller">
-
-    <h2>NNT Seller Centre</h2>
-    <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
-
-    <h3>Seller Registration</h3>
-
-    <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
-
-        <label>Business or seller name</label>
-        <input type="text" placeholder="Enter seller name" required>
-
-        <label>Email address</label>
-        <input type="email" placeholder="Enter email address" required>
-
-        <label>Product category</label>
-        <select required>
-            <option value="">Choose a category</option>
-            <option>Cars</option>
-            <option>Shoes</option>
-            <option>Electronics</option>
-            <option>Clothing</option>
-            <option>Furniture</option>
-            <option>Other</option>
-        </select>
-
-        <button type="submit">Preview Registration</button>
-
-    </form>
-
-    <h3>Seller Dashboard</h3>
-    <p>Manage products, prices, stock and customer orders.</p>
-
-    <button onclick="alert('Welcome to your NNT Seller Dashboard! Here you will manage your products, prices, and orders.')">
-        Open Seller Dashboard
-    </button>
-
-    <h3>Add a Product</h3>
-    <p>Sellers will be able to upload product details here.</p>
-
-    <button onclick="alert('Product upload will be connected later!')">
-        Add Product
-    </button>
-
-</section>
-
-<section id="contact">
-    <h2>Contact NNT</h2>
-    <p>Questions about NNT? Get in touch with our team.</p>
-    <p>Customer support and seller support will be added here.</p>
-</section>
-
-</main>
-
-<footer>
-    <p>© 2026 NNT Marketplace</p>
-    <p>Connecting Customers and Sellers</p>
-</footer>
-
-</body>
-</html>
-* { box-sizing: border-box; }
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f2f5f9;
-    color: #102b46;
-}
-header {
-    background: #102b46;
-    color: white;
-    text-align: center;
-    padding: 25px;
-}
-nav {
-    background: white;
-    padding: 15px;
-    text-align: center;
-}
-nav a {
-    display: inline-block;
-    margin: 8px;
-    color: #1769aa;
-    text-decoration: none;
-    font-weight: bold;
-}
-main {
-    max-width: 950px;
-    margin: auto;
-    padding: 18px;
-}
-section, .product {
-    background: white;
-    padding: 22px;
-    margin: 18px 0;
-    border-radius: 12px;
-}
-.products {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
-    gap: 15px;
-}
-.product {
-    margin: 0;
-    text-align: center;
-    border: 1px solid #ddd;
-}
-.product-icon {
-    font-size: 45px;
-}
-button {
-    background: #1769aa;
-    color: white;
-    padding: 12px 18px;
-    border: 0;
-    border-radius: 7px;
-    cursor: pointer;
-    margin-top: 8px;
-}
-input, select {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0 15px;
-    border: 1px solid #bbb;
-    border-radius: 6px;
-}
-footer {
-    background: #102b46;
-    color: white;
-    text-align: center;
-    padding: 22px;
-}
-</style>
-</head>
-<body>
-
-<header>
-    <h1>Welcome to NNT</h1>
-    <p>Your Marketplace. Your Products. Your World.</p>
-</header>
-
-<nav>
-    <a href="#home">Home</a>
-    <a href="#products">Products</a>
-    <a href="#seller">Seller Centre</a>
-    <a href="#contact">Contact</a>
-</nav>
-
-<main>
-
-<section id="home">
-    <h2>Welcome to NNT Marketplace</h2>
-    <p>Discover products from different sellers and dealerships.</p>
-    <p>Find what you need, contact the seller and shop through NNT.</p>
-    <a href="#products"><button>Explore Products</button></a>
-</section>
-
-<section id="products">
-    <h2>Explore Products</h2>
-    <p>These are example categories. Real seller listings will be added later.</p>
-
-    <div class="products">
-        <div class="product">
-            <div class="product-icon">🚗</div>
-            <h3>Cars</h3>
-            <p>Find vehicles from dealerships.</p>
-            <button onclick="alert('Car listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">👟</div>
-            <h3>Shoes</h3>
-            <p>Discover shoes from sellers.</p>
-            <button onclick="alert('Shoe listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">📱</div>
-            <h3>Electronics</h3>
-            <p>Phones and other technology.</p>
-            <button onclick="alert('Electronics are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">👕</div>
-            <h3>Clothing</h3>
-            <p>Discover fashion and clothing.</p>
-            <button onclick="alert('Clothing listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">🛋️</div>
-            <h3>Furniture</h3>
-            <p>Find furniture for your home.</p>
-            <button onclick="alert('Furniture listings are coming soon!')">Explore</button>
-        </div>
-
-        <div class="product">
-            <div class="product-icon">🏠</div>
-            <h3>Home Appliances</h3>
-            <p>Explore household products.</p>
-            <button onclick="alert('Appliances are coming soon!')">Explore</button>
-        </div>
-    </div>
-</section>
-
-<section id="seller">
-    <h2>NNT Seller Centre</h2>
-    <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
-
-    <h3>Seller Registration</h3>
-    <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
-        <label>Business or seller name</label>
-        <input type="text" placeholder="Enter seller name" required>
-
-        <label>Email address</label>
-        <input type="email" placeholder="Enter email address" required>
-
-        <label>Product category</label>
-        <select required>
-            <option value="">Choose a category</option>
-            <option>Cars</option>
-            <option>Shoes</option>
-            <option>Electronics</option>
-            <option>Clothing</option>
-            <option>Furniture</option>
-            <option>Other</option>
-        </select>
-
-        <button type="">Preview Registration</submitbutton>
-    </form>
-
-    <h3>Seller Dashboard</h3>
-    <p>Manage products, prices, stock and customer orders.</p>
-    <button onclick="alert('Welcome to your NNT Seller Dashboard! Here you will manage your products, prices, and orders.');>Open Seller Dashboard</button>
-
-    <h3>Add a Product</h3>
-    <p>Sellers will be able to upload product details here.</p>
-    <button onclick="alert('Product upload will be connected later!')">Add Product</button>
-</section>
-
-<section id="contact">
-    <h2>Contact NNT</h2>
-    <p>Questions about NNT? Get in touch with our team.</p>
-    <p>Customer support and seller support will be added here.</p>
-</section>
-
-</main>
-
-<footer>
-    <p>© 2026 NNT Marketplace</p>
-    <p>Connecting Customers and Sellers</p>
-</footer>
 
 </body>
 </html>
