@@ -118,7 +118,6 @@ footer {
   text-align: center;
   padding: 22px;
 }
-
 </style>
 </head>
 
@@ -281,7 +280,7 @@ footer {
 </main>
 
 <footer>
-  <p>© 2026 NNT Marketplace. All rights reserved.</p>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
 </footer>
 
 <script>
@@ -290,13 +289,14 @@ const productForm = document.getElementById("productForm");
 const productList = document.getElementById("productList");
 const categoryProductList = document.getElementById("categoryProductList");
 
-// Correct car photograph order
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
 const carPhotos = {
-  "Toyota Corolla": "P1.jpg",
-  "Volkswagen Golf": "P2.jpg",
-  "Volkswagen Golf GTI": "P2.jpg",
-  "BMW 320i": "P3.jpg",
-  "Mercedes-Benz GLC": "P4.jpg"
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
 };
 
 // Load previously saved products
@@ -329,6 +329,7 @@ savedProducts.forEach(function(product) {
   if (product.name === "Volkswagen Golf") {
     product.name = "Volkswagen Golf GTI";
     product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
   }
 
 });
@@ -340,7 +341,7 @@ const demoCars = [
     category: "Cars",
     price: "250000",
     description: "Example listing. Reliable family car.",
-    photo: "images/P1.jpg",
+    photo: "p1.jpg",
     demo: true
   },
   {
@@ -348,7 +349,7 @@ const demoCars = [
     category: "Cars",
     price: "220000",
     description: "Example listing. Volkswagen Golf GTI.",
-    photo: "images/P2.jpg",
+    photo: "p2.jpg",
     demo: true
   },
   {
@@ -356,7 +357,7 @@ const demoCars = [
     category: "Cars",
     price: "450000",
     description: "Example listing. Luxury and performance.",
-    photo: "images/P3.jpg",
+    photo: "p3.jpg",
     demo: true
   },
   {
@@ -364,7 +365,3012 @@ const demoCars = [
     category: "Cars",
     price: "680000",
     description: "Example listing. Premium SUV.",
-    photo: "images/P4.jpg",
+    photo: "p4.jpg",
+    demo: true
+  }
+];
+
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
+try {
+  localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
+} catch(error) {
+  alert("Could not save the updated products. Please check browser storage.");
+}
+
+// Create product cards
+function createProductCard(savedProduct) {
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  if (savedProduct.demo) {
+
+    const demoLabel = document.createElement("p");
+    demoLabel.className = "demo-label";
+    demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
+    product.appendChild(demoLabel);
+
+  }
+
+  if (savedProduct.photo) {
+
+    const image = document.createElement("img");
+
+    image.src = savedProduct.photo;
+    image.alt = savedProduct.name;
+
+    image.onerror = function() {
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
+    };
+
+    product.appendChild(image);
+
+  } else {
+
+    const icon = document.createElement("div");
+
+    icon.className = "product-icon";
+    icon.textContent = "🚘";
+
+    product.appendChild(icon);
+
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = savedProduct.name;
+
+  const category = document.createElement("p");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
+
+  const price = document.createElement("p");
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
+
+  const description = document.createElement("p");
+  description.textContent = savedProduct.description || "";
+
+  product.appendChild(title);
+  product.appendChild(category);
+  product.appendChild(price);
+  product.appendChild(description);
+
+  return product;
+
+}
+
+// Display products
+function displayProduct(savedProduct) {
+  productList.appendChild(createProductCard(savedProduct));
+}
+
+savedProducts.forEach(displayProduct);
+
+// Browse categories
+function showCategory(category) {
+
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
+
+  categoryProductList.innerHTML = "";
+
+  const matchingProducts = savedProducts.filter(function(product) {
+    return product.category === category;
+  });
+
+  if (matchingProducts.length === 0) {
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    categoryProductList.appendChild(message);
+
+  } else {
+
+    matchingProducts.forEach(function(product) {
+      categoryProductList.appendChild(createProductCard(product));
+    });
+
+  }
+
+  document.getElementById("categoryResults").scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+// Add new products
+productForm.addEventListener("submit", function(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
+
+  function saveProduct(photoData) {
+
+    const newProduct = {
+      name: name,
+      category: category,
+      price: price,
+      description: description,
+      photo: photoData
+    };
+
+    savedProducts.push(newProduct);
+
+    try {
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
+    } catch(error) {
+
+      savedProducts.pop();
+
+      alert("Storage is full. Please choose a smaller photo.");
+
+      return;
+
+    }
+
+    displayProduct(newProduct);
+
+    productForm.reset();
+
+    alert("Your product has been added!");
+
+  }
+
+  if (photoFile) {
+
+    if (!photoFile.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+
+    if (photoFile.size > 1024 * 1024) {
+      alert("Please choose a photo smaller than 1 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+      saveProduct(reader.result);
+    };
+
+    reader.onerror = function() {
+      alert("The photo could not be loaded. Please try again.");
+    };
+
+    reader.readAsDataURL(photoFile);
+
+  } else {
+
+    saveProduct("");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NNT Marketplace</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #102b46;
+}
+
+header {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+nav {
+  background: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 8px;
+  color: #1769aa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px;
+}
+
+section, .product {
+  background: white;
+  padding: 22px;
+  margin: 18px 0;
+  border-radius: 12px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  margin: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.product img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.product-icon {
+  font-size: 55px;
+}
+
+.demo-label {
+  background: #fff0cc;
+  color: #805600;
+  padding: 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+}
+
+footer {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Welcome to NNT</h1>
+  <p>Your Marketplace. Your Products. Your World.</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Products</a>
+  <a href="#seller">Seller Centre</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+<section id="home">
+  <h2>Welcome to NNT Marketplace</h2>
+  <p>Discover products, explore categories and get ready to shop with NNT.</p>
+</section>
+
+<section id="products">
+  <h2>Explore Products</h2>
+  <p>Choose a category to browse available products.</p>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">🚗</div>
+      <h3>Cars</h3>
+      <button onclick="showCategory('Cars')">Explore Cars</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👟</div>
+      <h3>Shoes</h3>
+      <button onclick="showCategory('Shoes')">Explore Shoes</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📱</div>
+      <h3>Electronics</h3>
+      <button onclick="showCategory('Electronics')">Explore Electronics</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👕</div>
+      <h3>Clothing</h3>
+      <button onclick="showCategory('Clothing')">Explore Clothing</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🛋️</div>
+      <h3>Furniture</h3>
+      <button onclick="showCategory('Furniture')">Explore Furniture</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏠</div>
+      <h3>Home Appliances</h3>
+      <button onclick="showCategory('Home Appliances')">Explore Appliances</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="categoryResults">
+  <h2 id="categoryTitle">Browse Products</h2>
+
+  <div class="products" id="categoryProductList">
+    <p>Choose a category above to see products.</p>
+  </div>
+</section>
+
+<section id="seller">
+
+  <h2>NNT Seller Centre</h2>
+  <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+  <h3>Seller Registration</h3>
+
+  <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+
+    <label>Business or seller name</label>
+    <input type="text" placeholder="Enter seller name" required>
+
+    <label>Email address</label>
+    <input type="email" placeholder="Enter email address" required>
+
+    <label>Product category</label>
+
+    <select required>
+      <option value="">Choose a category</option>
+      <option>Cars</option>
+      <option>Shoes</option>
+      <option>Electronics</option>
+      <option>Clothing</option>
+      <option>Furniture</option>
+      <option>Home Appliances</option>
+    </select>
+
+    <button type="submit">Preview Registration</button>
+
+  </form>
+
+  <h3>Seller Dashboard</h3>
+  <p>Manage products, prices, stock and customer orders.</p>
+
+  <button onclick="alert('Welcome to your NNT Seller Dashboard! More dashboard features will be connected later.')">
+    Open Seller Dashboard
+  </button>
+
+  <h3>Add a Product</h3>
+  <p>Add your product details and choose the correct category.</p>
+
+  <form id="productForm">
+
+    <label>Product Name</label>
+    <input type="text" id="productName" placeholder="Enter product name" required>
+
+    <label>Product Category</label>
+
+    <select id="productCategory" required>
+      <option value="">Choose a category</option>
+      <option value="Cars">Cars</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Home Appliances">Home Appliances</option>
+    </select>
+
+    <label>Product Price (R)</label>
+    <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
+
+    <label>Product Description</label>
+    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+
+    <label>Product Photo</label>
+    <input type="file" id="productPhoto" accept="image/*">
+
+    <button type="submit">Add Product</button>
+
+  </form>
+
+  <div id="productList">
+    <h3>Products Added</h3>
+  </div>
+
+</section>
+
+<section id="contact">
+  <h2>Contact NNT</h2>
+  <p>Thank you for visiting NNT Marketplace.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
+</footer>
+
+<script>
+
+const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const categoryProductList = document.getElementById("categoryProductList");
+
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
+const carPhotos = {
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
+};
+
+// Load previously saved products
+let savedProducts = [];
+
+try {
+  savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
+} catch(error) {
+  savedProducts = [];
+}
+
+// Update older demo listings
+savedProducts.forEach(function(product) {
+
+  if (!product.demo) return;
+
+  if (product.name === "Volkswagen Polo") {
+    product.name = "Volkswagen Golf";
+  }
+
+  if (carPhotos[product.name]) {
+    product.photo = carPhotos[product.name];
+  }
+
+  if (product.name === "Volkswagen Golf") {
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
+  }
+
+});
+
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "p1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "p2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "p3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "p4.jpg",
+    demo: true
+  }
+];
+
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
+try {
+  localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
+} catch(error) {
+  alert("Could not save the updated products. Please check browser storage.");
+}
+
+// Create product cards
+function createProductCard(savedProduct) {
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  if (savedProduct.demo) {
+
+    const demoLabel = document.createElement("p");
+    demoLabel.className = "demo-label";
+    demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
+    product.appendChild(demoLabel);
+
+  }
+
+  if (savedProduct.photo) {
+
+    const image = document.createElement("img");
+
+    image.src = savedProduct.photo;
+    image.alt = savedProduct.name;
+
+    image.onerror = function() {
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
+    };
+
+    product.appendChild(image);
+
+  } else {
+
+    const icon = document.createElement("div");
+
+    icon.className = "product-icon";
+    icon.textContent = "🚘";
+
+    product.appendChild(icon);
+
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = savedProduct.name;
+
+  const category = document.createElement("p");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
+
+  const price = document.createElement("p");
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
+
+  const description = document.createElement("p");
+  description.textContent = savedProduct.description || "";
+
+  product.appendChild(title);
+  product.appendChild(category);
+  product.appendChild(price);
+  product.appendChild(description);
+
+  return product;
+
+}
+
+// Display products
+function displayProduct(savedProduct) {
+  productList.appendChild(createProductCard(savedProduct));
+}
+
+savedProducts.forEach(displayProduct);
+
+// Browse categories
+function showCategory(category) {
+
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
+
+  categoryProductList.innerHTML = "";
+
+  const matchingProducts = savedProducts.filter(function(product) {
+    return product.category === category;
+  });
+
+  if (matchingProducts.length === 0) {
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    categoryProductList.appendChild(message);
+
+  } else {
+
+    matchingProducts.forEach(function(product) {
+      categoryProductList.appendChild(createProductCard(product));
+    });
+
+  }
+
+  document.getElementById("categoryResults").scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+// Add new products
+productForm.addEventListener("submit", function(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
+
+  function saveProduct(photoData) {
+
+    const newProduct = {
+      name: name,
+      category: category,
+      price: price,
+      description: description,
+      photo: photoData
+    };
+
+    savedProducts.push(newProduct);
+
+    try {
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
+    } catch(error) {
+
+      savedProducts.pop();
+
+      alert("Storage is full. Please choose a smaller photo.");
+
+      return;
+
+    }
+
+    displayProduct(newProduct);
+
+    productForm.reset();
+
+    alert("Your product has been added!");
+
+  }
+
+  if (photoFile) {
+
+    if (!photoFile.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+
+    if (photoFile.size > 1024 * 1024) {
+      alert("Please choose a photo smaller than 1 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+      saveProduct(reader.result);
+    };
+
+    reader.onerror = function() {
+      alert("The photo could not be loaded. Please try again.");
+    };
+
+    reader.readAsDataURL(photoFile);
+
+  } else {
+
+    saveProduct("");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NNT Marketplace</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #102b46;
+}
+
+header {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+nav {
+  background: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 8px;
+  color: #1769aa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px;
+}
+
+section, .product {
+  background: white;
+  padding: 22px;
+  margin: 18px 0;
+  border-radius: 12px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  margin: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.product img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.product-icon {
+  font-size: 55px;
+}
+
+.demo-label {
+  background: #fff0cc;
+  color: #805600;
+  padding: 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+}
+
+footer {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Welcome to NNT</h1>
+  <p>Your Marketplace. Your Products. Your World.</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Products</a>
+  <a href="#seller">Seller Centre</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+<section id="home">
+  <h2>Welcome to NNT Marketplace</h2>
+  <p>Discover products, explore categories and get ready to shop with NNT.</p>
+</section>
+
+<section id="products">
+  <h2>Explore Products</h2>
+  <p>Choose a category to browse available products.</p>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">🚗</div>
+      <h3>Cars</h3>
+      <button onclick="showCategory('Cars')">Explore Cars</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👟</div>
+      <h3>Shoes</h3>
+      <button onclick="showCategory('Shoes')">Explore Shoes</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📱</div>
+      <h3>Electronics</h3>
+      <button onclick="showCategory('Electronics')">Explore Electronics</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👕</div>
+      <h3>Clothing</h3>
+      <button onclick="showCategory('Clothing')">Explore Clothing</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🛋️</div>
+      <h3>Furniture</h3>
+      <button onclick="showCategory('Furniture')">Explore Furniture</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏠</div>
+      <h3>Home Appliances</h3>
+      <button onclick="showCategory('Home Appliances')">Explore Appliances</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="categoryResults">
+  <h2 id="categoryTitle">Browse Products</h2>
+
+  <div class="products" id="categoryProductList">
+    <p>Choose a category above to see products.</p>
+  </div>
+</section>
+
+<section id="seller">
+
+  <h2>NNT Seller Centre</h2>
+  <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+  <h3>Seller Registration</h3>
+
+  <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+
+    <label>Business or seller name</label>
+    <input type="text" placeholder="Enter seller name" required>
+
+    <label>Email address</label>
+    <input type="email" placeholder="Enter email address" required>
+
+    <label>Product category</label>
+
+    <select required>
+      <option value="">Choose a category</option>
+      <option>Cars</option>
+      <option>Shoes</option>
+      <option>Electronics</option>
+      <option>Clothing</option>
+      <option>Furniture</option>
+      <option>Home Appliances</option>
+    </select>
+
+    <button type="submit">Preview Registration</button>
+
+  </form>
+
+  <h3>Seller Dashboard</h3>
+  <p>Manage products, prices, stock and customer orders.</p>
+
+  <button onclick="alert('Welcome to your NNT Seller Dashboard! More dashboard features will be connected later.')">
+    Open Seller Dashboard
+  </button>
+
+  <h3>Add a Product</h3>
+  <p>Add your product details and choose the correct category.</p>
+
+  <form id="productForm">
+
+    <label>Product Name</label>
+    <input type="text" id="productName" placeholder="Enter product name" required>
+
+    <label>Product Category</label>
+
+    <select id="productCategory" required>
+      <option value="">Choose a category</option>
+      <option value="Cars">Cars</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Home Appliances">Home Appliances</option>
+    </select>
+
+    <label>Product Price (R)</label>
+    <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
+
+    <label>Product Description</label>
+    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+
+    <label>Product Photo</label>
+    <input type="file" id="productPhoto" accept="image/*">
+
+    <button type="submit">Add Product</button>
+
+  </form>
+
+  <div id="productList">
+    <h3>Products Added</h3>
+  </div>
+
+</section>
+
+<section id="contact">
+  <h2>Contact NNT</h2>
+  <p>Thank you for visiting NNT Marketplace.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
+</footer>
+
+<script>
+
+const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const categoryProductList = document.getElementById("categoryProductList");
+
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
+const carPhotos = {
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
+};
+
+// Load previously saved products
+let savedProducts = [];
+
+try {
+  savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
+} catch(error) {
+  savedProducts = [];
+}
+
+// Update older demo listings
+savedProducts.forEach(function(product) {
+
+  if (!product.demo) return;
+
+  if (product.name === "Volkswagen Polo") {
+    product.name = "Volkswagen Golf";
+  }
+
+  if (carPhotos[product.name]) {
+    product.photo = carPhotos[product.name];
+  }
+
+  if (product.name === "Volkswagen Golf") {
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
+  }
+
+});
+
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "p1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "p2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "p3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "p4.jpg",
+    demo: true
+  }
+];
+
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
+try {
+  localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
+} catch(error) {
+  alert("Could not save the updated products. Please check browser storage.");
+}
+
+// Create product cards
+function createProductCard(savedProduct) {
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  if (savedProduct.demo) {
+
+    const demoLabel = document.createElement("p");
+    demoLabel.className = "demo-label";
+    demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
+    product.appendChild(demoLabel);
+
+  }
+
+  if (savedProduct.photo) {
+
+    const image = document.createElement("img");
+
+    image.src = savedProduct.photo;
+    image.alt = savedProduct.name;
+
+    image.onerror = function() {
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
+    };
+
+    product.appendChild(image);
+
+  } else {
+
+    const icon = document.createElement("div");
+
+    icon.className = "product-icon";
+    icon.textContent = "🚘";
+
+    product.appendChild(icon);
+
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = savedProduct.name;
+
+  const category = document.createElement("p");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
+
+  const price = document.createElement("p");
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
+
+  const description = document.createElement("p");
+  description.textContent = savedProduct.description || "";
+
+  product.appendChild(title);
+  product.appendChild(category);
+  product.appendChild(price);
+  product.appendChild(description);
+
+  return product;
+
+}
+
+// Display products
+function displayProduct(savedProduct) {
+  productList.appendChild(createProductCard(savedProduct));
+}
+
+savedProducts.forEach(displayProduct);
+
+// Browse categories
+function showCategory(category) {
+
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
+
+  categoryProductList.innerHTML = "";
+
+  const matchingProducts = savedProducts.filter(function(product) {
+    return product.category === category;
+  });
+
+  if (matchingProducts.length === 0) {
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    categoryProductList.appendChild(message);
+
+  } else {
+
+    matchingProducts.forEach(function(product) {
+      categoryProductList.appendChild(createProductCard(product));
+    });
+
+  }
+
+  document.getElementById("categoryResults").scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+// Add new products
+productForm.addEventListener("submit", function(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
+
+  function saveProduct(photoData) {
+
+    const newProduct = {
+      name: name,
+      category: category,
+      price: price,
+      description: description,
+      photo: photoData
+    };
+
+    savedProducts.push(newProduct);
+
+    try {
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
+    } catch(error) {
+
+      savedProducts.pop();
+
+      alert("Storage is full. Please choose a smaller photo.");
+
+      return;
+
+    }
+
+    displayProduct(newProduct);
+
+    productForm.reset();
+
+    alert("Your product has been added!");
+
+  }
+
+  if (photoFile) {
+
+    if (!photoFile.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+
+    if (photoFile.size > 1024 * 1024) {
+      alert("Please choose a photo smaller than 1 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+      saveProduct(reader.result);
+    };
+
+    reader.onerror = function() {
+      alert("The photo could not be loaded. Please try again.");
+    };
+
+    reader.readAsDataURL(photoFile);
+
+  } else {
+
+    saveProduct("");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NNT Marketplace</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #102b46;
+}
+
+header {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+nav {
+  background: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 8px;
+  color: #1769aa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px;
+}
+
+section, .product {
+  background: white;
+  padding: 22px;
+  margin: 18px 0;
+  border-radius: 12px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  margin: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.product img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.product-icon {
+  font-size: 55px;
+}
+
+.demo-label {
+  background: #fff0cc;
+  color: #805600;
+  padding: 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+}
+
+footer {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Welcome to NNT</h1>
+  <p>Your Marketplace. Your Products. Your World.</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Products</a>
+  <a href="#seller">Seller Centre</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+<section id="home">
+  <h2>Welcome to NNT Marketplace</h2>
+  <p>Discover products, explore categories and get ready to shop with NNT.</p>
+</section>
+
+<section id="products">
+  <h2>Explore Products</h2>
+  <p>Choose a category to browse available products.</p>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">🚗</div>
+      <h3>Cars</h3>
+      <button onclick="showCategory('Cars')">Explore Cars</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👟</div>
+      <h3>Shoes</h3>
+      <button onclick="showCategory('Shoes')">Explore Shoes</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📱</div>
+      <h3>Electronics</h3>
+      <button onclick="showCategory('Electronics')">Explore Electronics</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👕</div>
+      <h3>Clothing</h3>
+      <button onclick="showCategory('Clothing')">Explore Clothing</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🛋️</div>
+      <h3>Furniture</h3>
+      <button onclick="showCategory('Furniture')">Explore Furniture</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏠</div>
+      <h3>Home Appliances</h3>
+      <button onclick="showCategory('Home Appliances')">Explore Appliances</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="categoryResults">
+  <h2 id="categoryTitle">Browse Products</h2>
+
+  <div class="products" id="categoryProductList">
+    <p>Choose a category above to see products.</p>
+  </div>
+</section>
+
+<section id="seller">
+
+  <h2>NNT Seller Centre</h2>
+  <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+  <h3>Seller Registration</h3>
+
+  <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+
+    <label>Business or seller name</label>
+    <input type="text" placeholder="Enter seller name" required>
+
+    <label>Email address</label>
+    <input type="email" placeholder="Enter email address" required>
+
+    <label>Product category</label>
+
+    <select required>
+      <option value="">Choose a category</option>
+      <option>Cars</option>
+      <option>Shoes</option>
+      <option>Electronics</option>
+      <option>Clothing</option>
+      <option>Furniture</option>
+      <option>Home Appliances</option>
+    </select>
+
+    <button type="submit">Preview Registration</button>
+
+  </form>
+
+  <h3>Seller Dashboard</h3>
+  <p>Manage products, prices, stock and customer orders.</p>
+
+  <button onclick="alert('Welcome to your NNT Seller Dashboard! More dashboard features will be connected later.')">
+    Open Seller Dashboard
+  </button>
+
+  <h3>Add a Product</h3>
+  <p>Add your product details and choose the correct category.</p>
+
+  <form id="productForm">
+
+    <label>Product Name</label>
+    <input type="text" id="productName" placeholder="Enter product name" required>
+
+    <label>Product Category</label>
+
+    <select id="productCategory" required>
+      <option value="">Choose a category</option>
+      <option value="Cars">Cars</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Home Appliances">Home Appliances</option>
+    </select>
+
+    <label>Product Price (R)</label>
+    <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
+
+    <label>Product Description</label>
+    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+
+    <label>Product Photo</label>
+    <input type="file" id="productPhoto" accept="image/*">
+
+    <button type="submit">Add Product</button>
+
+  </form>
+
+  <div id="productList">
+    <h3>Products Added</h3>
+  </div>
+
+</section>
+
+<section id="contact">
+  <h2>Contact NNT</h2>
+  <p>Thank you for visiting NNT Marketplace.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
+</footer>
+
+<script>
+
+const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const categoryProductList = document.getElementById("categoryProductList");
+
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
+const carPhotos = {
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
+};
+
+// Load previously saved products
+let savedProducts = [];
+
+try {
+  savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
+} catch(error) {
+  savedProducts = [];
+}
+
+// Update older demo listings
+savedProducts.forEach(function(product) {
+
+  if (!product.demo) return;
+
+  if (product.name === "Volkswagen Polo") {
+    product.name = "Volkswagen Golf";
+  }
+
+  if (carPhotos[product.name]) {
+    product.photo = carPhotos[product.name];
+  }
+
+  if (product.name === "Volkswagen Golf") {
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
+  }
+
+});
+
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "p1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "p2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "p3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "p4.jpg",
+    demo: true
+  }
+];
+
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
+try {
+  localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
+} catch(error) {
+  alert("Could not save the updated products. Please check browser storage.");
+}
+
+// Create product cards
+function createProductCard(savedProduct) {
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  if (savedProduct.demo) {
+
+    const demoLabel = document.createElement("p");
+    demoLabel.className = "demo-label";
+    demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
+    product.appendChild(demoLabel);
+
+  }
+
+  if (savedProduct.photo) {
+
+    const image = document.createElement("img");
+
+    image.src = savedProduct.photo;
+    image.alt = savedProduct.name;
+
+    image.onerror = function() {
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
+    };
+
+    product.appendChild(image);
+
+  } else {
+
+    const icon = document.createElement("div");
+
+    icon.className = "product-icon";
+    icon.textContent = "🚘";
+
+    product.appendChild(icon);
+
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = savedProduct.name;
+
+  const category = document.createElement("p");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
+
+  const price = document.createElement("p");
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
+
+  const description = document.createElement("p");
+  description.textContent = savedProduct.description || "";
+
+  product.appendChild(title);
+  product.appendChild(category);
+  product.appendChild(price);
+  product.appendChild(description);
+
+  return product;
+
+}
+
+// Display products
+function displayProduct(savedProduct) {
+  productList.appendChild(createProductCard(savedProduct));
+}
+
+savedProducts.forEach(displayProduct);
+
+// Browse categories
+function showCategory(category) {
+
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
+
+  categoryProductList.innerHTML = "";
+
+  const matchingProducts = savedProducts.filter(function(product) {
+    return product.category === category;
+  });
+
+  if (matchingProducts.length === 0) {
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    categoryProductList.appendChild(message);
+
+  } else {
+
+    matchingProducts.forEach(function(product) {
+      categoryProductList.appendChild(createProductCard(product));
+    });
+
+  }
+
+  document.getElementById("categoryResults").scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+// Add new products
+productForm.addEventListener("submit", function(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
+
+  function saveProduct(photoData) {
+
+    const newProduct = {
+      name: name,
+      category: category,
+      price: price,
+      description: description,
+      photo: photoData
+    };
+
+    savedProducts.push(newProduct);
+
+    try {
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
+    } catch(error) {
+
+      savedProducts.pop();
+
+      alert("Storage is full. Please choose a smaller photo.");
+
+      return;
+
+    }
+
+    displayProduct(newProduct);
+
+    productForm.reset();
+
+    alert("Your product has been added!");
+
+  }
+
+  if (photoFile) {
+
+    if (!photoFile.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+
+    if (photoFile.size > 1024 * 1024) {
+      alert("Please choose a photo smaller than 1 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+      saveProduct(reader.result);
+    };
+
+    reader.onerror = function() {
+      alert("The photo could not be loaded. Please try again.");
+    };
+
+    reader.readAsDataURL(photoFile);
+
+  } else {
+
+    saveProduct("");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NNT Marketplace</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #102b46;
+}
+
+header {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+nav {
+  background: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 8px;
+  color: #1769aa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px;
+}
+
+section, .product {
+  background: white;
+  padding: 22px;
+  margin: 18px 0;
+  border-radius: 12px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  margin: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.product img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.product-icon {
+  font-size: 55px;
+}
+
+.demo-label {
+  background: #fff0cc;
+  color: #805600;
+  padding: 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+}
+
+footer {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Welcome to NNT</h1>
+  <p>Your Marketplace. Your Products. Your World.</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Products</a>
+  <a href="#seller">Seller Centre</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+<section id="home">
+  <h2>Welcome to NNT Marketplace</h2>
+  <p>Discover products, explore categories and get ready to shop with NNT.</p>
+</section>
+
+<section id="products">
+  <h2>Explore Products</h2>
+  <p>Choose a category to browse available products.</p>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">🚗</div>
+      <h3>Cars</h3>
+      <button onclick="showCategory('Cars')">Explore Cars</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👟</div>
+      <h3>Shoes</h3>
+      <button onclick="showCategory('Shoes')">Explore Shoes</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📱</div>
+      <h3>Electronics</h3>
+      <button onclick="showCategory('Electronics')">Explore Electronics</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👕</div>
+      <h3>Clothing</h3>
+      <button onclick="showCategory('Clothing')">Explore Clothing</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🛋️</div>
+      <h3>Furniture</h3>
+      <button onclick="showCategory('Furniture')">Explore Furniture</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏠</div>
+      <h3>Home Appliances</h3>
+      <button onclick="showCategory('Home Appliances')">Explore Appliances</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="categoryResults">
+  <h2 id="categoryTitle">Browse Products</h2>
+
+  <div class="products" id="categoryProductList">
+    <p>Choose a category above to see products.</p>
+  </div>
+</section>
+
+<section id="seller">
+
+  <h2>NNT Seller Centre</h2>
+  <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+  <h3>Seller Registration</h3>
+
+  <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+
+    <label>Business or seller name</label>
+    <input type="text" placeholder="Enter seller name" required>
+
+    <label>Email address</label>
+    <input type="email" placeholder="Enter email address" required>
+
+    <label>Product category</label>
+
+    <select required>
+      <option value="">Choose a category</option>
+      <option>Cars</option>
+      <option>Shoes</option>
+      <option>Electronics</option>
+      <option>Clothing</option>
+      <option>Furniture</option>
+      <option>Home Appliances</option>
+    </select>
+
+    <button type="submit">Preview Registration</button>
+
+  </form>
+
+  <h3>Seller Dashboard</h3>
+  <p>Manage products, prices, stock and customer orders.</p>
+
+  <button onclick="alert('Welcome to your NNT Seller Dashboard! More dashboard features will be connected later.')">
+    Open Seller Dashboard
+  </button>
+
+  <h3>Add a Product</h3>
+  <p>Add your product details and choose the correct category.</p>
+
+  <form id="productForm">
+
+    <label>Product Name</label>
+    <input type="text" id="productName" placeholder="Enter product name" required>
+
+    <label>Product Category</label>
+
+    <select id="productCategory" required>
+      <option value="">Choose a category</option>
+      <option value="Cars">Cars</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Home Appliances">Home Appliances</option>
+    </select>
+
+    <label>Product Price (R)</label>
+    <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
+
+    <label>Product Description</label>
+    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+
+    <label>Product Photo</label>
+    <input type="file" id="productPhoto" accept="image/*">
+
+    <button type="submit">Add Product</button>
+
+  </form>
+
+  <div id="productList">
+    <h3>Products Added</h3>
+  </div>
+
+</section>
+
+<section id="contact">
+  <h2>Contact NNT</h2>
+  <p>Thank you for visiting NNT Marketplace.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
+</footer>
+
+<script>
+
+const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const categoryProductList = document.getElementById("categoryProductList");
+
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
+const carPhotos = {
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
+};
+
+// Load previously saved products
+let savedProducts = [];
+
+try {
+  savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
+} catch(error) {
+  savedProducts = [];
+}
+
+// Update older demo listings
+savedProducts.forEach(function(product) {
+
+  if (!product.demo) return;
+
+  if (product.name === "Volkswagen Polo") {
+    product.name = "Volkswagen Golf";
+  }
+
+  if (carPhotos[product.name]) {
+    product.photo = carPhotos[product.name];
+  }
+
+  if (product.name === "Volkswagen Golf") {
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
+  }
+
+});
+
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "p1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "p2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "p3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "p4.jpg",
+    demo: true
+  }
+];
+
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
+try {
+  localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
+} catch(error) {
+  alert("Could not save the updated products. Please check browser storage.");
+}
+
+// Create product cards
+function createProductCard(savedProduct) {
+
+  const product = document.createElement("div");
+  product.className = "product";
+
+  if (savedProduct.demo) {
+
+    const demoLabel = document.createElement("p");
+    demoLabel.className = "demo-label";
+    demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
+    product.appendChild(demoLabel);
+
+  }
+
+  if (savedProduct.photo) {
+
+    const image = document.createElement("img");
+
+    image.src = savedProduct.photo;
+    image.alt = savedProduct.name;
+
+    image.onerror = function() {
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
+    };
+
+    product.appendChild(image);
+
+  } else {
+
+    const icon = document.createElement("div");
+
+    icon.className = "product-icon";
+    icon.textContent = "🚘";
+
+    product.appendChild(icon);
+
+  }
+
+  const title = document.createElement("h3");
+  title.textContent = savedProduct.name;
+
+  const category = document.createElement("p");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
+
+  const price = document.createElement("p");
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
+
+  const description = document.createElement("p");
+  description.textContent = savedProduct.description || "";
+
+  product.appendChild(title);
+  product.appendChild(category);
+  product.appendChild(price);
+  product.appendChild(description);
+
+  return product;
+
+}
+
+// Display products
+function displayProduct(savedProduct) {
+  productList.appendChild(createProductCard(savedProduct));
+}
+
+savedProducts.forEach(displayProduct);
+
+// Browse categories
+function showCategory(category) {
+
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
+
+  categoryProductList.innerHTML = "";
+
+  const matchingProducts = savedProducts.filter(function(product) {
+    return product.category === category;
+  });
+
+  if (matchingProducts.length === 0) {
+
+    const message = document.createElement("p");
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    categoryProductList.appendChild(message);
+
+  } else {
+
+    matchingProducts.forEach(function(product) {
+      categoryProductList.appendChild(createProductCard(product));
+    });
+
+  }
+
+  document.getElementById("categoryResults").scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+// Add new products
+productForm.addEventListener("submit", function(event) {
+
+  event.preventDefault();
+
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
+
+  function saveProduct(photoData) {
+
+    const newProduct = {
+      name: name,
+      category: category,
+      price: price,
+      description: description,
+      photo: photoData
+    };
+
+    savedProducts.push(newProduct);
+
+    try {
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
+    } catch(error) {
+
+      savedProducts.pop();
+
+      alert("Storage is full. Please choose a smaller photo.");
+
+      return;
+
+    }
+
+    displayProduct(newProduct);
+
+    productForm.reset();
+
+    alert("Your product has been added!");
+
+  }
+
+  if (photoFile) {
+
+    if (!photoFile.type.startsWith("image/")) {
+      alert("Please choose an image file.");
+      return;
+    }
+
+    if (photoFile.size > 1024 * 1024) {
+      alert("Please choose a photo smaller than 1 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function() {
+      saveProduct(reader.result);
+    };
+
+    reader.onerror = function() {
+      alert("The photo could not be loaded. Please try again.");
+    };
+
+    reader.readAsDataURL(photoFile);
+
+  } else {
+
+    saveProduct("");
+
+  }
+
+});
+
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NNT Marketplace</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f2f5f9;
+  color: #102b46;
+}
+
+header {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 25px;
+}
+
+nav {
+  background: white;
+  padding: 15px;
+  text-align: center;
+}
+
+nav a {
+  display: inline-block;
+  margin: 8px;
+  color: #1769aa;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+main {
+  max-width: 1100px;
+  margin: auto;
+  padding: 18px;
+}
+
+section, .product {
+  background: white;
+  padding: 22px;
+  margin: 18px 0;
+  border-radius: 12px;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.product {
+  margin: 0;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.product img {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.product-icon {
+  font-size: 55px;
+}
+
+.demo-label {
+  background: #fff0cc;
+  color: #805600;
+  padding: 7px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  background: #1769aa;
+  color: white;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0 15px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+}
+
+footer {
+  background: #102b46;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Welcome to NNT</h1>
+  <p>Your Marketplace. Your Products. Your World.</p>
+</header>
+
+<nav>
+  <a href="#home">Home</a>
+  <a href="#products">Products</a>
+  <a href="#seller">Seller Centre</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<main>
+
+<section id="home">
+  <h2>Welcome to NNT Marketplace</h2>
+  <p>Discover products, explore categories and get ready to shop with NNT.</p>
+</section>
+
+<section id="products">
+  <h2>Explore Products</h2>
+  <p>Choose a category to browse available products.</p>
+
+  <div class="products">
+
+    <div class="product">
+      <div class="product-icon">🚗</div>
+      <h3>Cars</h3>
+      <button onclick="showCategory('Cars')">Explore Cars</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👟</div>
+      <h3>Shoes</h3>
+      <button onclick="showCategory('Shoes')">Explore Shoes</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">📱</div>
+      <h3>Electronics</h3>
+      <button onclick="showCategory('Electronics')">Explore Electronics</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">👕</div>
+      <h3>Clothing</h3>
+      <button onclick="showCategory('Clothing')">Explore Clothing</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🛋️</div>
+      <h3>Furniture</h3>
+      <button onclick="showCategory('Furniture')">Explore Furniture</button>
+    </div>
+
+    <div class="product">
+      <div class="product-icon">🏠</div>
+      <h3>Home Appliances</h3>
+      <button onclick="showCategory('Home Appliances')">Explore Appliances</button>
+    </div>
+
+  </div>
+</section>
+
+<section id="categoryResults">
+  <h2 id="categoryTitle">Browse Products</h2>
+
+  <div class="products" id="categoryProductList">
+    <p>Choose a category above to see products.</p>
+  </div>
+</section>
+
+<section id="seller">
+
+  <h2>NNT Seller Centre</h2>
+  <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
+
+  <h3>Seller Registration</h3>
+
+  <form onsubmit="event.preventDefault(); alert('This is a preview. Secure seller registration will be connected later.');">
+
+    <label>Business or seller name</label>
+    <input type="text" placeholder="Enter seller name" required>
+
+    <label>Email address</label>
+    <input type="email" placeholder="Enter email address" required>
+
+    <label>Product category</label>
+
+    <select required>
+      <option value="">Choose a category</option>
+      <option>Cars</option>
+      <option>Shoes</option>
+      <option>Electronics</option>
+      <option>Clothing</option>
+      <option>Furniture</option>
+      <option>Home Appliances</option>
+    </select>
+
+    <button type="submit">Preview Registration</button>
+
+  </form>
+
+  <h3>Seller Dashboard</h3>
+  <p>Manage products, prices, stock and customer orders.</p>
+
+  <button onclick="alert('Welcome to your NNT Seller Dashboard! More dashboard features will be connected later.')">
+    Open Seller Dashboard
+  </button>
+
+  <h3>Add a Product</h3>
+  <p>Add your product details and choose the correct category.</p>
+
+  <form id="productForm">
+
+    <label>Product Name</label>
+    <input type="text" id="productName" placeholder="Enter product name" required>
+
+    <label>Product Category</label>
+
+    <select id="productCategory" required>
+      <option value="">Choose a category</option>
+      <option value="Cars">Cars</option>
+      <option value="Shoes">Shoes</option>
+      <option value="Electronics">Electronics</option>
+      <option value="Clothing">Clothing</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Home Appliances">Home Appliances</option>
+    </select>
+
+    <label>Product Price (R)</label>
+    <input type="number" id="productPrice" placeholder="Enter price" min="0" step="0.01" required>
+
+    <label>Product Description</label>
+    <textarea id="productDescription" placeholder="Describe your product" required></textarea>
+
+    <label>Product Photo</label>
+    <input type="file" id="productPhoto" accept="image/*">
+
+    <button type="submit">Add Product</button>
+
+  </form>
+
+  <div id="productList">
+    <h3>Products Added</h3>
+  </div>
+
+</section>
+
+<section id="contact">
+  <h2>Contact NNT</h2>
+  <p>Thank you for visiting NNT Marketplace.</p>
+</section>
+
+</main>
+
+<footer>
+  <p>©️ 2026 NNT Marketplace. All rights reserved.</p>
+</footer>
+
+<script>
+
+const productForm = document.getElementById("productForm");
+const productList = document.getElementById("productList");
+const categoryProductList = document.getElementById("categoryProductList");
+
+// Correct car photograph paths for GitHub Pages.
+// The pictures are directly beside index.html.
+const carPhotos = {
+  "Toyota Corolla": "p1.jpg",
+  "Volkswagen Golf": "p2.jpg",
+  "Volkswagen Golf GTI": "p2.jpg",
+  "BMW 320i": "p3.jpg",
+  "Mercedes-Benz GLC": "p4.jpg"
+};
+
+// Load previously saved products
+let savedProducts = [];
+
+try {
+  savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
+} catch(error) {
+  savedProducts = [];
+}
+
+// Update older demo listings
+savedProducts.forEach(function(product) {
+
+  if (!product.demo) return;
+
+  if (product.name === "Volkswagen Polo") {
+    product.name = "Volkswagen Golf";
+  }
+
+  if (carPhotos[product.name]) {
+    product.photo = carPhotos[product.name];
+  }
+
+  if (product.name === "Volkswagen Golf") {
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
+    product.photo = carPhotos["Volkswagen Golf GTI"];
+  }
+
+});
+
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "p1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "p2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "p3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "p4.jpg",
     demo: true
   }
 ];
