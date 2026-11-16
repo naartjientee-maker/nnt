@@ -37,7 +37,7 @@ nav a {
 }
 
 main {
-  max-width: 950px;
+  max-width: 1100px;
   margin: auto;
   padding: 18px;
 }
@@ -51,7 +51,7 @@ section, .product {
 
 .products {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
 }
 
@@ -63,10 +63,21 @@ section, .product {
 
 .product img {
   width: 100%;
-  max-width: 100%;
-  height: 160px;
+  height: 190px;
   object-fit: cover;
   border-radius: 8px;
+  display: block;
+}
+
+.image-error {
+  height: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f2f5f9;
+  color: #805600;
+  border-radius: 8px;
+  padding: 12px;
 }
 
 .product-icon {
@@ -107,6 +118,7 @@ footer {
   text-align: center;
   padding: 22px;
 }
+
 </style>
 </head>
 
@@ -178,12 +190,14 @@ footer {
 
 <section id="categoryResults">
   <h2 id="categoryTitle">Browse Products</h2>
+
   <div class="products" id="categoryProductList">
     <p>Choose a category above to see products.</p>
   </div>
 </section>
 
 <section id="seller">
+
   <h2>NNT Seller Centre</h2>
   <p>Are you a seller? Join NNT and prepare to showcase your products.</p>
 
@@ -198,6 +212,7 @@ footer {
     <input type="email" placeholder="Enter email address" required>
 
     <label>Product category</label>
+
     <select required>
       <option value="">Choose a category</option>
       <option>Cars</option>
@@ -209,6 +224,7 @@ footer {
     </select>
 
     <button type="submit">Preview Registration</button>
+
   </form>
 
   <h3>Seller Dashboard</h3>
@@ -227,6 +243,7 @@ footer {
     <input type="text" id="productName" placeholder="Enter product name" required>
 
     <label>Product Category</label>
+
     <select id="productCategory" required>
       <option value="">Choose a category</option>
       <option value="Cars">Cars</option>
@@ -247,11 +264,13 @@ footer {
     <input type="file" id="productPhoto" accept="image/*">
 
     <button type="submit">Add Product</button>
+
   </form>
 
   <div id="productList">
     <h3>Products Added</h3>
   </div>
+
 </section>
 
 <section id="contact">
@@ -271,24 +290,32 @@ const productForm = document.getElementById("productForm");
 const productList = document.getElementById("productList");
 const categoryProductList = document.getElementById("categoryProductList");
 
+// Correct car photograph order
+const carPhotos = {
+  "Toyota Corolla": "images/P1.jpg",
+  "Volkswagen Golf": "images/P2.jpg",
+  "Volkswagen Golf GTI": "images/P2.jpg",
+  "BMW 320i": "images/P3.jpg",
+  "Mercedes-Benz GLC": "images/P4.jpg"
+};
+
+// Load previously saved products
 let savedProducts = [];
 
 try {
   savedProducts = JSON.parse(localStorage.getItem("nntProducts")) || [];
+
+  if (!Array.isArray(savedProducts)) {
+    savedProducts = [];
+  }
+
 } catch(error) {
   savedProducts = [];
 }
 
-// Connect the four car photographs to the existing demo cars.
-// This also updates demo cars already saved in the browser.
-const carPhotos = {
-  "Toyota Corolla": "images/P1.jpeg",
-  "Volkswagen Golf": "images/P2.jpeg",
-  "BMW 320i": "images/P3.jpeg",
-  "Mercedes-Benz GLC": "images/P4.jpeg"
-};
-
+// Update older demo listings
 savedProducts.forEach(function(product) {
+
   if (!product.demo) return;
 
   if (product.name === "Volkswagen Polo") {
@@ -300,103 +327,133 @@ savedProducts.forEach(function(product) {
   }
 
   if (product.name === "Volkswagen Golf") {
-    product.photo = "images/P4.jpeg";
-    product.description = "Example listing. Volkswagen Golf.";
+    product.name = "Volkswagen Golf GTI";
+    product.description = "Example listing. Volkswagen Golf GTI.";
   }
+
 });
 
-// Add example cars only once.
-if (!localStorage.getItem("nntDemoCarsAdded")) {
-
-  const demoCars = [
-    {
-      name: "Toyota Corolla",
-      category: "Cars",
-      price: "250000",
-      description: "Example listing. Reliable family car.",
-      photo: "images/P2.jpeg",
-      demo: true
-    },
-    {
-      name: "BMW 320i",
-      category: "Cars",
-      price: "450000",
-      description: "Example listing. Luxury and performance.",
-      photo: "images/P1.jpeg",
-      demo: true
-    },
-    {
-      name: "Volkswagen Golf",
-      category: "Cars",
-      price: "220000",
-      description: "Example listing. Volkswagen Golf.",
-      photo: "images/P4.jpeg",
-      demo: true
-    },
-    {
-      name: "Mercedes-Benz GLC",
-      category: "Cars",
-      price: "680000",
-      description: "Example listing. Premium SUV.",
-      photo: "images/P3.jpeg",
-      demo: true
-    }
-  ];
-
-  savedProducts = savedProducts.concat(demoCars);
-
-  try {
-    localStorage.setItem("nntDemoCarsAdded", "yes");
-  } catch(error) {
-    alert("Could not save the sample cars. Please check browser storage.");
+// Correct example cars
+const demoCars = [
+  {
+    name: "Toyota Corolla",
+    category: "Cars",
+    price: "250000",
+    description: "Example listing. Reliable family car.",
+    photo: "images/P1.jpg",
+    demo: true
+  },
+  {
+    name: "Volkswagen Golf GTI",
+    category: "Cars",
+    price: "220000",
+    description: "Example listing. Volkswagen Golf GTI.",
+    photo: "images/P2.jpg",
+    demo: true
+  },
+  {
+    name: "BMW 320i",
+    category: "Cars",
+    price: "450000",
+    description: "Example listing. Luxury and performance.",
+    photo: "images/P3.jpg",
+    demo: true
+  },
+  {
+    name: "Mercedes-Benz GLC",
+    category: "Cars",
+    price: "680000",
+    description: "Example listing. Premium SUV.",
+    photo: "images/P4.jpg",
+    demo: true
   }
-}
+];
 
-// Save the updated car names and photograph paths.
+// Add missing demo cars and update existing ones
+demoCars.forEach(function(car) {
+
+  const existing = savedProducts.find(function(product) {
+    return product.demo && product.name === car.name;
+  });
+
+  if (existing) {
+    Object.assign(existing, car);
+  } else {
+    savedProducts.push(car);
+  }
+
+});
+
+// Save corrected products
 try {
   localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+  localStorage.setItem("nntDemoCarsAdded", "yes");
 } catch(error) {
-  alert("Could not update the sample car listings.");
+  alert("Could not save the updated products. Please check browser storage.");
 }
 
+// Create product cards
 function createProductCard(savedProduct) {
 
   const product = document.createElement("div");
   product.className = "product";
 
-  if(savedProduct.demo) {
+  if (savedProduct.demo) {
+
     const demoLabel = document.createElement("p");
     demoLabel.className = "demo-label";
     demoLabel.textContent = "DEMO LISTING - NOT A REAL CAR FOR SALE";
+
     product.appendChild(demoLabel);
+
   }
 
-  if(savedProduct.photo) {
+  if (savedProduct.photo) {
+
     const image = document.createElement("img");
+
     image.src = savedProduct.photo;
     image.alt = savedProduct.name;
+
     image.onerror = function() {
-      image.style.display = "none";
+
+      const errorMessage = document.createElement("div");
+
+      errorMessage.className = "image-error";
+      errorMessage.textContent =
+        "Image not found. Check: " + savedProduct.photo;
+
+      image.replaceWith(errorMessage);
+
     };
+
     product.appendChild(image);
-  } else if(savedProduct.demo) {
+
+  } else {
+
     const icon = document.createElement("div");
+
     icon.className = "product-icon";
     icon.textContent = "🚘";
+
     product.appendChild(icon);
+
   }
 
   const title = document.createElement("h3");
   title.textContent = savedProduct.name;
 
   const category = document.createElement("p");
-  category.textContent = "Category: " + (savedProduct.category || "Uncategorised");
+  category.textContent =
+    "Category: " + (savedProduct.category || "Uncategorised");
 
   const price = document.createElement("p");
-  price.textContent = (savedProduct.demo ? "Example price: R" : "Price: R") + savedProduct.price;
+  price.textContent =
+    (savedProduct.demo ? "Example price: R" : "Price: R") +
+    savedProduct.price;
 
   const description = document.createElement("p");
-  description.textContent = savedProduct.description;
+  description.textContent = savedProduct.description || "";
 
   product.appendChild(title);
   product.appendChild(category);
@@ -404,17 +461,21 @@ function createProductCard(savedProduct) {
   product.appendChild(description);
 
   return product;
+
 }
 
+// Display products
 function displayProduct(savedProduct) {
   productList.appendChild(createProductCard(savedProduct));
 }
 
 savedProducts.forEach(displayProduct);
 
+// Browse categories
 function showCategory(category) {
 
-  document.getElementById("categoryTitle").textContent = category + " Products";
+  document.getElementById("categoryTitle").textContent =
+    category + " Products";
 
   categoryProductList.innerHTML = "";
 
@@ -422,30 +483,48 @@ function showCategory(category) {
     return product.category === category;
   });
 
-  if(matchingProducts.length === 0) {
+  if (matchingProducts.length === 0) {
+
     const message = document.createElement("p");
-    message.textContent = "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
+    message.textContent =
+      "No products in this category yet. Sellers can add products from NNT Seller Centre.";
+
     categoryProductList.appendChild(message);
+
   } else {
+
     matchingProducts.forEach(function(product) {
       categoryProductList.appendChild(createProductCard(product));
     });
+
   }
 
   document.getElementById("categoryResults").scrollIntoView({
     behavior: "smooth"
   });
+
 }
 
+// Add new products
 productForm.addEventListener("submit", function(event) {
 
   event.preventDefault();
 
-  const name = document.getElementById("productName").value.trim();
-  const category = document.getElementById("productCategory").value;
-  const price = document.getElementById("productPrice").value;
-  const description = document.getElementById("productDescription").value.trim();
-  const photoFile = document.getElementById("productPhoto").files[0];
+  const name =
+    document.getElementById("productName").value.trim();
+
+  const category =
+    document.getElementById("productCategory").value;
+
+  const price =
+    document.getElementById("productPrice").value;
+
+  const description =
+    document.getElementById("productDescription").value.trim();
+
+  const photoFile =
+    document.getElementById("productPhoto").files[0];
 
   function saveProduct(photoData) {
 
@@ -460,28 +539,38 @@ productForm.addEventListener("submit", function(event) {
     savedProducts.push(newProduct);
 
     try {
-      localStorage.setItem("nntProducts", JSON.stringify(savedProducts));
+
+      localStorage.setItem(
+        "nntProducts",
+        JSON.stringify(savedProducts)
+      );
+
     } catch(error) {
+
       savedProducts.pop();
+
       alert("Storage is full. Please choose a smaller photo.");
+
       return;
+
     }
 
     displayProduct(newProduct);
+
     productForm.reset();
 
     alert("Your product has been added!");
 
   }
 
-  if(photoFile) {
+  if (photoFile) {
 
-    if(!photoFile.type.startsWith("image/")) {
+    if (!photoFile.type.startsWith("image/")) {
       alert("Please choose an image file.");
       return;
     }
 
-    if(photoFile.size > 1024 * 1024) {
+    if (photoFile.size > 1024 * 1024) {
       alert("Please choose a photo smaller than 1 MB.");
       return;
     }
